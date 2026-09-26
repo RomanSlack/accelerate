@@ -1,179 +1,173 @@
 <div align="center">
 
-<img src="docs/img/hero_drop1.gif" width="100%" alt="The first drop: humans swinging through a black jungle, cut on every drum hit">
+<img src="docs/img/hero_drop1.gif" width="100%" alt="First drop: figures swinging through a dark jungle, cut on the drums">
 
 # ACCELERATE
 
-**A 58-second AGI edit where every cut lands on a drum hit.**
+**A beat-locked video compositor and the 58-second AGI edit made with it.**
 
-No timeline editor. No After Effects. 75 AI-generated clips, one Python compositor,
-and six rounds of brutally honest notes.
-
-`232 cuts` · `8.3 ms median sync to the drums` · `75 clips` · `6 versions` · `~$44 in generation`
+`232 cuts` · `8.3 ms median sync to the drums` · `75 AI-generated clips` · `6 iterations`
 
 </div>
 
 ---
 
-## What this is
+## Overview
 
-A hype edit about racing toward AGI and ASI, in the style of the fast, dark, slightly unhinged
-edits that do numbers on X. It was made by a human director (me) and Claude Code working in a
-terminal: I gave the notes, Claude wrote and ran everything, then watched its own output frame
-by frame and fixed what was off.
+ACCELERATE is a Python engine that cuts video to percussion. It detects kick, snare and hi-hat onsets
+in a track and assigns each one an on-screen action, so the edit is driven by the drums rather than
+placed by hand. The repo contains the engine, every generation prompt, a Claude Code skill that
+packages the full workflow, and a record of the six iterations it took to reach the final cut.
 
-The interesting part is not the final video. It is the **engine**: a beat-locked compositor that
-reads the percussion out of the track and makes every kick, snare and hi-hat *do something*.
+The edit was produced with [Claude Code](https://claude.com/claude-code) (Claude Opus 5.5), which wrote
+the engine, rendered each version and reviewed the output frame by frame, with creative direction from
+[@RomanSlack](https://github.com/RomanSlack).
 
 <table>
 <tr>
-<td width="50%"><img src="docs/img/grin_drop2.gif" alt="Drop 2: the machine face, then a man's slow unsettling grin"></td>
-<td width="50%"><img src="docs/img/people.gif" alt="Real people running through empty places"></td>
+<td width="50%"><img src="docs/img/grin_drop2.gif" alt="Second drop"></td>
+<td width="50%"><img src="docs/img/people.gif" alt="Figures running through empty locations"></td>
 </tr>
 <tr>
-<td align="center"><sub>Drop 2: the machine wakes up, a stranger grins</sub></td>
-<td align="center"><sub>Real people, desolate places, cut on the snare</sub></td>
+<td align="center"><sub>Second drop</sub></td>
+<td align="center"><sub>First drop, cut on kicks and snares</sub></td>
 </tr>
 </table>
 
-## Make your own: the `schizo-edit` Claude Code skill
+## Claude Code skill
 
-The whole workflow is packaged as a Claude Code skill in
-[`.claude/skills/schizo-edit/`](.claude/skills/schizo-edit/SKILL.md): the house style (every "do" and
-"don't" from six rounds of notes), music analysis, prompt recipes, scene authoring, and how to QC a
-render without being able to hear it.
+The workflow is packaged as a Claude Code skill in
+[`.claude/skills/schizo-edit/`](.claude/skills/schizo-edit/SKILL.md). It covers the style guide derived
+from the iterations, music analysis, prompt recipes, scene authoring, rendering, and render QC.
 
 ```bash
 git clone https://github.com/RomanSlack/accelerate && cd accelerate
-claude    # the skill loads automatically inside this repo
-# > make a schizo edit to path/to/my_track.mp4 about <your topic>
+claude    # the skill is available automatically inside this repo
+# > make a schizo edit to path/to/track.mp4 about <topic>
 ```
 
-To use it from any folder: `cp -r .claude/skills/schizo-edit ~/.claude/skills/`.
+To use it outside this repo: `cp -r .claude/skills/schizo-edit ~/.claude/skills/`.
 
-## Every cut lands on a drum hit
+## Percussion sync
 
-<img src="docs/img/beatmap.png" width="100%" alt="Chart: kick, snare and hi-hat onsets above the cut points of the final edit">
+<img src="docs/img/beatmap.png" width="100%" alt="Kick, snare and hi-hat onsets above the cut points of the final edit">
 
-The track is split into three bands and each band gets a job:
-
-| Hit | Band | What it does on screen |
+| Onset | Band | On-screen action |
 |---|---|---|
-| **Kick** | 20 to 150 Hz | Hard cut + a zoom punch with a little camera shake |
-| **Snare** | 1.2 to 5 kHz | Hard cut, often switching the *treatment* of the same subject (footage to line art to dots) |
-| **Hi-hat** | 7 to 16 kHz | No cut. The camera steps forward, the clip skips ahead, exposure pulses |
-| **Last bar of a section** | all | Every single onset becomes a cut (the "stutter" into the next part) |
+| Kick | 20 to 150 Hz | Hard cut, zoom punch, light camera shake |
+| Snare | 1.2 to 5 kHz | Hard cut, often to a different treatment of the same subject |
+| Hi-hat | 7 to 16 kHz | Camera step, clip time skip, exposure pulse (no cut) |
+| Final bar of a section | all | Every onset becomes a cut |
 
-Onsets come from `librosa` onset detection on each band ([`engine/perc.py`](engine/perc.py)).
-The cut list is not hand-placed: scenes are lists of `(clip, treatment)` pairs and the drums decide
-when to advance ([`engine/render3.py`](engine/render3.py)). Sync was measured on the final render
-with ffmpeg scene detection: median 8.3 ms from a cut to the nearest onset, 85% within one frame at 60fps.
+Onsets are detected per band with `librosa` ([`engine/perc.py`](engine/perc.py)). Scenes are defined as
+ordered `(clip, treatment)` lists and advance on each onset ([`engine/render3.py`](engine/render3.py)).
+Measured on the final render with ffmpeg scene detection: median 8.3 ms from a cut to the nearest
+onset, 85% within one frame at 60 fps.
 
-## Six versions, one director
+## Iterations
 
-<img src="docs/img/evolution.jpg" width="100%" alt="The same eight moments across all six versions">
+<img src="docs/img/evolution.jpg" width="100%" alt="The same eight timestamps across all six versions">
 
-Same eight timestamps, every version. The notes that drove each round are in
-[**docs/DIRECTORS_NOTES.md**](docs/DIRECTORS_NOTES.md). The short version:
+The same eight timestamps across every version. Full feedback and changes per round are in
+[docs/DIRECTORS_NOTES.md](docs/DIRECTORS_NOTES.md).
 
-| | The note | The fix |
+| Version | Feedback | Change |
 |---|---|---|
-| **v1 → v2** | (self-review) Text too small to read on a phone | Bigger slogans (wrong direction, it turns out) |
-| **v2 → v3** | *"Way too much text... less cringe and more artistic. The fast paced parts are what I want the whole video to be, moving on every piece of percussion."* | Deleted every word. Rebuilt the edit around drum onsets. 60fps. |
-| **v3 → v4** | *"The repeating glitch effect is super lame... zooming in slowly on still images is so lame. 34 to 41 seconds is absolutely excellent."* | Killed all glitch fx and every still. Animated the stills. Built a generative treatment library. Made 34 to 41s the house style and left it pixel-identical. |
-| **v4 → v5** | *"More shots of real people, running around, creepy desolate vibes. The kid watching TV looks super AI generated. The ending is lame. The orb is lame."* | 14 new clips of ordinary people in empty places (Veo for realism). New ending: a hard cut to black and silence one downbeat early. |
-| **v5 → v6** | *"The wireframe sphere is still lame. Have it be people swinging in a jungle like monkeys... Too many horses. The rotating dither face: make it a close-up of someone's face, smiling."* | Wireframes and point clouds gone. Humans swinging through a black jungle on the first drop. A real man's slow, wrong smile answers the machine face. |
+| v1 → v2 | Text too small on mobile (internal review) | Larger text |
+| v2 → v3 | Remove text; make the entire edit move with the percussion | All text removed; cuts generated from drum onsets; 60 fps |
+| v3 → v4 | Remove glitch effects and slow zooms on stills; keep the 34 to 41 s section | Effects and stills removed; stills animated; generative treatment library; 34 to 41 s preserved exactly |
+| v4 → v5 | More realistic people in desolate settings; replace static AI-looking shots and the ending | Realistic footage of people (Veo 3.1); new hard-cut ending |
+| v5 → v6 | Replace wireframe geometry and the point-cloud face; reduce repeated footage | Jungle sequence on the first drop; live-action facial close-up; repeats reduced |
 
-## The treatments
+## Treatments
 
-Every clip can be rendered through any of these, and the snare picks which one.
-All of them are ~10 to 30 ms per 1080p frame in NumPy/OpenCV ([`engine/fxgen.py`](engine/fxgen.py)).
+Each clip can be rendered through any of these. Snares switch between them. All run at roughly
+10 to 30 ms per 1080p frame in NumPy/OpenCV ([`engine/fxgen.py`](engine/fxgen.py)).
 
 <img src="docs/img/treatments.jpg" width="100%" alt="One clip rendered through twelve treatments">
 
-## The whole film
+## Final edit
 
 <img src="docs/img/filmstrip.jpg" width="100%" alt="Contact sheet of the final edit at two frames per second">
 
-## The footage
+## Footage
 
-<img src="docs/img/clip_library.jpg" width="100%" alt="Grid of all 75 generated clips">
+<img src="docs/img/clip_library.jpg" width="100%" alt="All 75 generated clips">
 
-Everything is AI-generated. Every prompt is in [`prompts/`](prompts), in the order it was made, and `scripts/gen_clips.py` regenerates any of them:
+All footage is AI-generated. Prompts are in [`prompts/`](prompts) in the order they were used, and
+[`scripts/gen_clips.py`](scripts/gen_clips.py) regenerates any of them.
 
-| File | Model | What |
+| File | Model | Content |
 |---|---|---|
-| `01_images_nano_banana.jsonl` | Gemini 3.1 Flash Image (Nano Banana 2) | 33 keyframes, b&w with blood-red accents |
-| `02_images_gpt_image_2_redos.jsonl` | gpt-image-2 | 5 redos where Nano Banana was weak or refused |
-| `03`, `04` | Kling 2.5 Turbo Pro, image-to-video | First animation pass |
-| `05` | Kling, text-to-video | Motion-first clips for the percussion pass |
-| `06` | Kling, both | Animated the best stills (no more slow zooms) + new b&w footage |
-| `07` | Veo 3.1 + Kling | Real people, empty places, 16mm documentary look |
-| `08` | Veo 3.1 + Kling | Humans swinging through a black jungle |
-| `09` | Veo 3.1 | Extreme close-up faces (the grin) |
+| `01` | Gemini 3.1 Flash Image | 33 keyframes |
+| `02` | gpt-image-2 | 5 keyframe replacements |
+| `03`, `04` | Kling 2.5 Turbo Pro (image-to-video) | Initial animation pass |
+| `05` | Kling 2.5 Turbo Pro (text-to-video) | Motion-led clips |
+| `06` | Kling 2.5 Turbo Pro | Animated keyframes and additional footage |
+| `07` | Veo 3.1, Kling | People in desolate locations |
+| `08` | Veo 3.1, Kling | Jungle sequence |
+| `09` | Veo 3.1 | Facial close-ups |
 
-The prompt trick that got real-looking people: *"Documentary realism, shot on 16mm film by a
-handheld camera, real ordinary people, natural imperfect framing, overcast flat light"*. Veo 3.1
-was noticeably better than Kling for anyone close to camera.
+For realistic people, Veo 3.1 outperformed Kling on subjects close to camera. The prompt suffix used:
+*"Documentary realism, shot on 16mm film by a handheld camera, real ordinary people, natural imperfect
+framing, overcast flat light"*.
 
-## Run it
+Total generation cost was approximately $44.
 
-You bring the music and generate the clips; the engine does the rest.
+## Usage
 
 ```bash
 pip install -r requirements.txt
 scripts/setup_fonts.sh                       # OFL fonts from Google Fonts
-scripts/make_music.sh path/to/track.mp4      # -> build/music.wav (bar-aligned 58.8s edit)
-python engine/perc.py                        # -> build/perc.json (kick / snare / hat onsets)
+scripts/make_music.sh path/to/track.mp4      # -> build/music.wav (bar-aligned 58.8 s edit)
+python engine/perc.py                        # -> build/perc.json (kick, snare, hi-hat onsets)
 
-export FAL_KEY=...                            # never commit it
-python scripts/gen_clips.py prompts/07_real_people_veo_kling.jsonl --dry-run   # cost + payloads
+export FAL_KEY=...
+python scripts/gen_clips.py prompts/07_real_people_veo_kling.jsonl --dry-run   # payloads and cost estimate
 python scripts/gen_clips.py prompts/07_real_people_veo_kling.jsonl             # -> assets/vid/<name>_0.mp4
-# (stills for image-to-video come from prompts/01-02 with any image model -> assets/img/<name>_0.png)
+# Image-to-video prompts expect keyframes at assets/img/<name>_0.png (prompts 01 and 02).
 
-python engine/prep.py                        # extract clip frames + audio envelopes
+python engine/prep.py                        # clip frames and audio envelopes
 python engine/render3.py stills 6.5 41.5     # preview frames -> build/stills3/
 python engine/render3.py video out.mp4       # full 1080p60 render
-python scripts/check_render.py out.mp4       # cut-to-drum sync, dark stretches, frame strips
+python scripts/check_render.py out.mp4       # sync stats, off-beat cuts, dark stretches, frame strips
 ```
 
-A full render takes about 5 minutes on a 16-core CPU with 8 workers and stays around 3 GB of RAM.
+A full render takes about 5 minutes on a 16-core CPU with 8 workers and uses about 3 GB of RAM.
 
-| File | Version | Notes |
-|---|---|---|
-| [`engine/render.py`](engine/render.py) | v1, v2 | Hand-placed timeline, slogans, glitch fx. Kept as the "before". |
-| [`engine/render2.py`](engine/render2.py) | v3 | Cut list generated from drum onsets. Still renders 34 to 41s of the final. |
-| [`engine/render3.py`](engine/render3.py) | v4 to v6 | Designed scenes, treatment switching on snares, the ending. |
-| [`engine/fxgen.py`](engine/fxgen.py) | | Contours, dot matrix, ascii, edges, slit-scan, strips, iris, tunnel, point cloud |
-| [`engine/perc.py`](engine/perc.py) | | Three-band onset detection |
-| [`engine/analyze.py`](engine/analyze.py), [`engine/drops.py`](engine/drops.py) | | Tempo, energy curve, exact drop timing, used to choose the bar-line cuts |
-| [`scripts/gen_clips.py`](scripts/gen_clips.py) | | fal.ai batch generator for the prompt files (Kling 2.5 Turbo Pro, Veo 3.1) |
-| [`scripts/check_render.py`](scripts/check_render.py) | | QC without ears: sync stats, off-beat cuts, dark stretches, frame strips |
+| File | Description |
+|---|---|
+| [`engine/render3.py`](engine/render3.py) | Current engine (v4 to v6): scene lists, onset-driven cuts, treatment switching |
+| [`engine/render2.py`](engine/render2.py) | v3 engine; also renders the 34 to 41 s section of the final edit |
+| [`engine/render.py`](engine/render.py) | v1 and v2 engine, kept for reference |
+| [`engine/fxgen.py`](engine/fxgen.py) | Treatments: contours, dot matrix, ASCII, edges, slit-scan, strips, iris, tunnel, point cloud |
+| [`engine/perc.py`](engine/perc.py) | Three-band onset detection |
+| [`engine/analyze.py`](engine/analyze.py), [`engine/drops.py`](engine/drops.py) | Tempo, energy curve and drop timing |
+| [`scripts/gen_clips.py`](scripts/gen_clips.py) | fal.ai batch generation (Kling 2.5 Turbo Pro, Veo 3.1) |
+| [`scripts/check_render.py`](scripts/check_render.py) | Render QC |
 
-## Things we learned the hard way
+## Findings
 
-- **Glitch effects read as cheap.** RGB split, slice bars and echo trails were the first thing cut.
-- **A slow zoom on a still is a slideshow.** Animate every still or don't use it.
-- **Slogans are cringe.** The version with zero words is the one that works.
-- **Screensaver geometry is lame.** Wireframe spheres and rotating point clouds lost to real humans doing strange things.
-- **Real faces beat AI faces.** One close-up of a man slowly smiling does more than any cosmic machine.
-- **End early.** A hard cut to black and silence one downbeat before the hit lands is better than any fade.
-- **Beat trackers love half-time.** The track is 154 BPM; librosa reported 76. The engine's "beat" is two real beats.
-- **Chroma split on a 1-bit frame turns it green.** 4:2:0 chroma subsampling smears the red/blue offsets. Only split colour on non-binary frames.
-- **Mind your RAM.** 15 render workers each caching full-res frames took the machine down. 8 workers with bounded caches: 3 GB.
+- Glitch effects (RGB split, slice displacement, echo trails) reduced perceived quality and were removed.
+- Slow zooms on still images read as a slideshow. All stills were animated or dropped.
+- On-screen text weakened the edit. The final version has none.
+- Abstract geometry (wireframes, point clouds) was less effective than live-action footage of people.
+- A hard cut to black one downbeat before the final hit was stronger than a fade-out.
+- Beat trackers may report half-time: the track is 154 BPM and librosa reported 76.
+- Chroma offset on 1-bit frames produces a green cast after 4:2:0 encoding, so it is applied only to non-binary frames.
+- Unbounded per-worker frame caches exhausted 62 GB of RAM at 15 workers. Eight workers with bounded caches use about 3 GB.
 
 ## Music
 
-**warhorse** by **fuyomo** ([listen on YouTube](https://www.youtube.com/watch?v=zI9-1F5-A5M)), 154 BPM, G major.
+**warhorse** by **fuyomo** ([YouTube](https://www.youtube.com/watch?v=zI9-1F5-A5M)), 154 BPM, G major.
 
-The beat is *free for non-profit use only; monetized tracks without a lease will be hit with copyright*.
-It is **not included** in this repo, and none of the GIFs here have audio. If you publish a
-monetized video with it, get a lease from fuyomo first.
+Licensed by the producer as free for non-profit use only; monetized use requires a lease. The audio is
+not included in this repository and the GIFs are silent.
 
 ## Credits
 
-- Direction, taste and every note: [@RomanSlack](https://github.com/RomanSlack)
-- Code, renders and frame-by-frame review: [Claude Code](https://claude.com/claude-code)
+- Creative direction: [@RomanSlack](https://github.com/RomanSlack)
+- Engine, rendering and review: [Claude Code](https://claude.com/claude-code)
 - Music: fuyomo
 - Fonts: Anton, VT323, Bebas Neue, Monoton, UnifrakturMaguntia (SIL Open Font License)
 
