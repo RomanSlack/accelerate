@@ -1,0 +1,19 @@
+# secrets: never commit
+.env
+.env.*
+*.env
+*.key
+
+# generated / heavy / copyrighted
+assets/
+build/
+ref/
+out/
+fonts/
+*.mp4
+*.wav
+*.mp3
+
+.venv/
+__pycache__/
+*.pyc
