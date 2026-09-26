@@ -3,3 +3,4 @@ opencv-python-headless
 librosa
 pillow
 scipy
+fal-client  # only for scripts/gen_clips.py

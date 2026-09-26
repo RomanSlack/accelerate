@@ -36,6 +36,21 @@ reads the percussion out of the track and makes every kick, snare and hi-hat *do
 </tr>
 </table>
 
+## Make your own: the `schizo-edit` Claude Code skill
+
+The whole workflow is packaged as a Claude Code skill in
+[`.claude/skills/schizo-edit/`](.claude/skills/schizo-edit/SKILL.md): the house style (every "do" and
+"don't" from six rounds of notes), music analysis, prompt recipes, scene authoring, and how to QC a
+render without being able to hear it.
+
+```bash
+git clone https://github.com/RomanSlack/accelerate && cd accelerate
+claude    # the skill loads automatically inside this repo
+# > make a schizo edit to path/to/my_track.mp4 about <your topic>
+```
+
+To use it from any folder: `cp -r .claude/skills/schizo-edit ~/.claude/skills/`.
+
 ## Every cut lands on a drum hit
 
 <img src="docs/img/beatmap.png" width="100%" alt="Chart: kick, snare and hi-hat onsets above the cut points of the final edit">
@@ -84,7 +99,7 @@ All of them are ~10 to 30 ms per 1080p frame in NumPy/OpenCV ([`engine/fxgen.py`
 
 <img src="docs/img/clip_library.jpg" width="100%" alt="Grid of all 75 generated clips">
 
-Everything is AI-generated. Every prompt is in [`prompts/`](prompts), in the order it was made:
+Everything is AI-generated. Every prompt is in [`prompts/`](prompts), in the order it was made, and `scripts/gen_clips.py` regenerates any of them:
 
 | File | Model | What |
 |---|---|---|
@@ -111,12 +126,15 @@ scripts/setup_fonts.sh                       # OFL fonts from Google Fonts
 scripts/make_music.sh path/to/track.mp4      # -> build/music.wav (bar-aligned 58.8s edit)
 python engine/perc.py                        # -> build/perc.json (kick / snare / hat onsets)
 
-# generate stills + clips from prompts/ with any fal.ai / OpenAI / Gemini client
-#   stills -> assets/img/<name>_0.png     clips -> assets/vid/<name>_0.mp4
+export FAL_KEY=...                            # never commit it
+python scripts/gen_clips.py prompts/07_real_people_veo_kling.jsonl --dry-run   # cost + payloads
+python scripts/gen_clips.py prompts/07_real_people_veo_kling.jsonl             # -> assets/vid/<name>_0.mp4
+# (stills for image-to-video come from prompts/01-02 with any image model -> assets/img/<name>_0.png)
 
 python engine/prep.py                        # extract clip frames + audio envelopes
 python engine/render3.py stills 6.5 41.5     # preview frames -> build/stills3/
 python engine/render3.py video out.mp4       # full 1080p60 render
+python scripts/check_render.py out.mp4       # cut-to-drum sync, dark stretches, frame strips
 ```
 
 A full render takes about 5 minutes on a 16-core CPU with 8 workers and stays around 3 GB of RAM.
@@ -129,6 +147,8 @@ A full render takes about 5 minutes on a 16-core CPU with 8 workers and stays ar
 | [`engine/fxgen.py`](engine/fxgen.py) | | Contours, dot matrix, ascii, edges, slit-scan, strips, iris, tunnel, point cloud |
 | [`engine/perc.py`](engine/perc.py) | | Three-band onset detection |
 | [`engine/analyze.py`](engine/analyze.py), [`engine/drops.py`](engine/drops.py) | | Tempo, energy curve, exact drop timing, used to choose the bar-line cuts |
+| [`scripts/gen_clips.py`](scripts/gen_clips.py) | | fal.ai batch generator for the prompt files (Kling 2.5 Turbo Pro, Veo 3.1) |
+| [`scripts/check_render.py`](scripts/check_render.py) | | QC without ears: sync stats, off-beat cuts, dark stretches, frame strips |
 
 ## Things we learned the hard way
 
